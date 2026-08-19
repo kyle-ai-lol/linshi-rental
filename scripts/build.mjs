@@ -1,5 +1,5 @@
 // Static site generator for 林氏租屋.
-// Reads data/site.json + data/listings.csv, writes site/*.html.
+// Reads data/site.json + data/listings.csv, writes docs/*.html (GitHub Pages serves /docs on main).
 // Re-run this after editing the CSV (later: after re-exporting the Google Sheet as CSV over data/listings.csv).
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync, copyFileSync } from 'node:fs';
@@ -54,9 +54,77 @@ function readSite() {
   return JSON.parse(readFileSync(path.join(ROOT, 'data/site.json'), 'utf8'));
 }
 
-function readListings() {
+function readListingsRaw() {
   const text = readFileSync(path.join(ROOT, 'data/listings.csv'), 'utf8');
   return parseCSV(text);
+}
+
+// ---- filter facets ----
+
+const TAG_DEFS = [
+  { key: 'subsidy', label: '可租補' },
+  { key: 'cat', label: '可貓' },
+  { key: 'dog', label: '可狗' },
+  { key: 'elevator', label: '有電梯' },
+  { key: 'parking', label: '有車位' },
+  { key: 'balcony', label: '有陽台' },
+  { key: 'flatutility', label: '台水電' },
+];
+
+const PRICE_BUCKETS = [
+  { key: 'p1', label: '8,000以下', test: (p) => p < 8000 },
+  { key: 'p2', label: '8,000-12,000', test: (p) => p >= 8000 && p < 12000 },
+  { key: 'p3', label: '12,000-16,000', test: (p) => p >= 12000 && p < 16000 },
+  { key: 'p4', label: '16,000-20,000', test: (p) => p >= 16000 && p < 20000 },
+  { key: 'p5', label: '20,000以上', test: (p) => p >= 20000 },
+];
+
+const LAYOUT_BUCKETS = [
+  { key: 'studio', label: '套房' },
+  { key: '1', label: '1房' },
+  { key: '2', label: '2房' },
+  { key: '3plus', label: '3房以上' },
+];
+
+function fmtPrice(n) {
+  return `NT$ ${n.toLocaleString('en-US')}`;
+}
+
+function layoutBucket(text) {
+  const t = String(text ?? '');
+  if (t.includes('套房') || t.includes('雅房')) return 'studio';
+  const m = t.match(/(\d+)\s*房/);
+  if (!m) return 'studio';
+  const n = parseInt(m[1], 10);
+  if (n >= 3) return '3plus';
+  return String(n);
+}
+
+function priceBucket(n) {
+  const b = PRICE_BUCKETS.find((b) => b.test(n));
+  return b ? b.key : 'p5';
+}
+
+function enrichListing(raw) {
+  const priceNum = Number(raw.price) || 0;
+  const tags = TAG_DEFS.filter((t) => (raw[`tag_${t.key}`] || '').trim() !== '').map((t) => t.key);
+  return {
+    ...raw,
+    priceNum,
+    priceDisplay: fmtPrice(priceNum),
+    layoutKey: layoutBucket(raw.layout),
+    priceKey: priceBucket(priceNum),
+    tags,
+    searchBlob: `${raw.area} ${raw.addr} ${raw.name}`.toLowerCase(),
+  };
+}
+
+function readListings() {
+  return readListingsRaw().map(enrichListing);
+}
+
+function uniqueAreas(listings) {
+  return [...new Set(listings.map((l) => l.area).filter(Boolean))];
 }
 
 const icon = {
@@ -66,8 +134,8 @@ const icon = {
     `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-7.2-7-12a7 7 0 0 1 14 0c0 4.8-7 12-7 12z"></path><circle cx="12" cy="9" r="2.5"></circle></svg>`,
   search: () =>
     `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B4A88F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`,
-  chevron: () =>
-    `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#B4A88F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`,
+  close: () =>
+    `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="5" x2="19" y2="19"></line><line x1="19" y1="5" x2="5" y2="19"></line></svg>`,
   phone: () =>
     `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7A6A57" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2C10.5 21 3 13.5 3 6a2 2 0 0 1 2-2z"></path></svg>`,
   chat: () =>
@@ -123,7 +191,7 @@ function footer(site, base = '') {
   </div>`;
 }
 
-function pageShell({ title, desc, base = '', body }) {
+function pageShell({ title, desc, base = '', extraScript = '', body }) {
   return `<!doctype html>
 <html lang="zh-Hant">
 <head>
@@ -138,13 +206,23 @@ function pageShell({ title, desc, base = '', body }) {
 <div class="page">
 ${body}
 </div>
+${extraScript}
 </body>
 </html>
 `;
 }
 
+function tagBadges(listing) {
+  if (!listing.tags.length) return '';
+  return `<div class="badges tags">
+            ${listing.tags.map((k) => `<span class="badge tag-badge">${esc(TAG_DEFS.find((t) => t.key === k).label)}</span>`).join('\n            ')}
+          </div>`;
+}
+
 function card(listing, base = '') {
-  return `      <a class="card" href="${base}listings/${listing.id}.html" style="color:inherit;">
+  return `      <a class="card" href="${base}listings/${listing.id}.html" style="color:inherit;"
+        data-area="${esc(listing.area)}" data-price="${listing.priceKey}" data-layout="${listing.layoutKey}"
+        data-tags="${listing.tags.join(' ')}" data-search="${esc(listing.searchBlob)}">
         <div class="card-img">${icon.house(40)}</div>
         <div class="card-body">
           <div class="tag-area">${esc(listing.area)}</div>
@@ -154,15 +232,23 @@ function card(listing, base = '') {
             <span class="badge">${esc(listing.size)}</span>
             <span class="badge">${esc(listing.layout)}</span>
           </div>
+          ${tagBadges(listing)}
           <div class="price-row">
-            <div class="price">${esc(listing.price)}<small>/月</small></div>
+            <div class="price">${esc(listing.priceDisplay)}<small>/月</small></div>
             <span class="view">查看詳情 →</span>
           </div>
         </div>
       </a>`;
 }
 
+function filterChipRow(group, items) {
+  return `      <div class="chip-row" data-filter-group="${group}">
+${items.map((it) => `        <button type="button" class="chip" data-value="${esc(it.key)}">${esc(it.label)}</button>`).join('\n')}
+      </div>`;
+}
+
 function buildIndex(site, listings) {
+  const areas = uniqueAreas(listings).map((a) => ({ key: a, label: a }));
   const body = `${topbar(site, 'index.html')}
 
   <div class="hero">
@@ -171,26 +257,42 @@ function buildIndex(site, listings) {
   </div>
 
   <div class="filter-bar">
-    <div class="filter-row">
-      <div class="search-box">${icon.search()}<input type="text" placeholder="搜尋區域、物件關鍵字"></div>
-      <div class="filter-pill"><span>區域：不限</span>${icon.chevron()}</div>
-      <div class="filter-pill"><span>坪數：不限</span>${icon.chevron()}</div>
-      <div class="filter-pill"><span>租金：不限</span>${icon.chevron()}</div>
+    <div class="search-box">${icon.search()}<input type="text" id="search-input" placeholder="搜尋地區、路名、關鍵字"></div>
+
+    <div class="filter-group">
+      <div class="filter-label">地區</div>
+${filterChipRow('area', areas)}
     </div>
-    <div class="chip-row">
-      <div class="chip active">全部</div>
-      <div class="chip">近捷運</div>
-      <div class="chip">可養寵物</div>
-      <div class="chip">已含家具</div>
+    <div class="filter-group">
+      <div class="filter-label">租金</div>
+${filterChipRow('price', PRICE_BUCKETS)}
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">格局</div>
+${filterChipRow('layout', LAYOUT_BUCKETS)}
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">特色</div>
+${filterChipRow('tag', TAG_DEFS)}
+    </div>
+
+    <div class="filter-footer">
+      <span id="result-count" class="result-count"></span>
+      <button type="button" id="clear-filters" class="clear-filters">清除篩選</button>
     </div>
   </div>
 
-  <div class="grid">
+  <div class="grid" id="listing-grid">
 ${listings.map((l) => card(l)).join('\n')}
   </div>
 
 ${footer(site)}`;
-  return pageShell({ title: `${site.brand}｜精選出租物件`, desc: site.tagline, body });
+  return pageShell({
+    title: `${site.brand}｜精選出租物件`,
+    desc: site.tagline,
+    extraScript: '<script src="assets/filter.js" defer></script>',
+    body,
+  });
 }
 
 function buildDetail(site, listing) {
@@ -220,6 +322,7 @@ function buildDetail(site, listing) {
           <span class="badge">${esc(listing.size)}</span>
           <span class="badge">${esc(listing.layout)}</span>
         </div>
+        ${tagBadges(listing)}
       </div>
 
       <div class="divider"></div>
@@ -239,7 +342,7 @@ function buildDetail(site, listing) {
     </div>
 
     <div class="inquiry-card">
-      <div class="inquiry-price">${esc(listing.price)}<small>/月</small></div>
+      <div class="inquiry-price">${esc(listing.priceDisplay)}<small>/月</small></div>
       <a class="btn-solid" href="${base}contact.html">預約看房</a>
       <div class="divider" style="margin:20px 0;"></div>
       <div class="contact-lines">
@@ -252,7 +355,7 @@ function buildDetail(site, listing) {
   </div>
 
 ${footer(site, base)}`;
-  return pageShell({ title: `${esc(listing.name)}｜${site.brand}`, desc: `${listing.area} ${listing.addr}・${listing.size}・${listing.price}/月`, base, body });
+  return pageShell({ title: `${esc(listing.name)}｜${site.brand}`, desc: `${listing.area} ${listing.addr}・${listing.size}・${listing.priceDisplay}/月`, base, body });
 }
 
 function buildAbout(site) {
@@ -330,6 +433,7 @@ function main() {
   mkdirSync(path.join(SITE, 'listings'), { recursive: true });
   mkdirSync(path.join(SITE, 'assets'), { recursive: true });
   copyFileSync(path.join(ROOT, 'assets/style.css'), path.join(SITE, 'assets/style.css'));
+  copyFileSync(path.join(ROOT, 'assets/filter.js'), path.join(SITE, 'assets/filter.js'));
   if (!existsSync(path.join(SITE, '.nojekyll'))) writeFileSync(path.join(SITE, '.nojekyll'), '');
 
   writeFileSync(path.join(SITE, 'index.html'), buildIndex(site, listings));
@@ -341,6 +445,7 @@ function main() {
   }
 
   console.log(`built: index.html, about.html, contact.html, listings/{${listings.map((l) => l.id).join(',')}}.html`);
+  console.log(`areas: ${uniqueAreas(listings).join(', ')}`);
 }
 
 main();

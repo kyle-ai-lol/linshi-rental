@@ -23,22 +23,61 @@
   </div>
 
   <div class="filter-bar">
-    <div class="filter-row">
-      <div class="search-box"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B4A88F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg><input type="text" placeholder="搜尋區域、物件關鍵字"></div>
-      <div class="filter-pill"><span>區域：不限</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#B4A88F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
-      <div class="filter-pill"><span>坪數：不限</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#B4A88F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
-      <div class="filter-pill"><span>租金：不限</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#B4A88F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+    <div class="search-box"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B4A88F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg><input type="text" id="search-input" placeholder="搜尋地區、路名、關鍵字"></div>
+
+    <div class="filter-group">
+      <div class="filter-label">地區</div>
+      <div class="chip-row" data-filter-group="area">
+        <button type="button" class="chip" data-value="信義區">信義區</button>
+        <button type="button" class="chip" data-value="大安區">大安區</button>
+        <button type="button" class="chip" data-value="中山區">中山區</button>
+        <button type="button" class="chip" data-value="松山區">松山區</button>
+        <button type="button" class="chip" data-value="內湖區">內湖區</button>
+        <button type="button" class="chip" data-value="文山區">文山區</button>
+      </div>
     </div>
-    <div class="chip-row">
-      <div class="chip active">全部</div>
-      <div class="chip">近捷運</div>
-      <div class="chip">可養寵物</div>
-      <div class="chip">已含家具</div>
+    <div class="filter-group">
+      <div class="filter-label">租金</div>
+      <div class="chip-row" data-filter-group="price">
+        <button type="button" class="chip" data-value="p1">8,000以下</button>
+        <button type="button" class="chip" data-value="p2">8,000-12,000</button>
+        <button type="button" class="chip" data-value="p3">12,000-16,000</button>
+        <button type="button" class="chip" data-value="p4">16,000-20,000</button>
+        <button type="button" class="chip" data-value="p5">20,000以上</button>
+      </div>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">格局</div>
+      <div class="chip-row" data-filter-group="layout">
+        <button type="button" class="chip" data-value="studio">套房</button>
+        <button type="button" class="chip" data-value="1">1房</button>
+        <button type="button" class="chip" data-value="2">2房</button>
+        <button type="button" class="chip" data-value="3plus">3房以上</button>
+      </div>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">特色</div>
+      <div class="chip-row" data-filter-group="tag">
+        <button type="button" class="chip" data-value="subsidy">可租補</button>
+        <button type="button" class="chip" data-value="cat">可貓</button>
+        <button type="button" class="chip" data-value="dog">可狗</button>
+        <button type="button" class="chip" data-value="elevator">有電梯</button>
+        <button type="button" class="chip" data-value="parking">有車位</button>
+        <button type="button" class="chip" data-value="balcony">有陽台</button>
+        <button type="button" class="chip" data-value="flatutility">台水電</button>
+      </div>
+    </div>
+
+    <div class="filter-footer">
+      <span id="result-count" class="result-count"></span>
+      <button type="button" id="clear-filters" class="clear-filters">清除篩選</button>
     </div>
   </div>
 
-  <div class="grid">
-      <a class="card" href="listings/a.html" style="color:inherit;">
+  <div class="grid" id="listing-grid">
+      <a class="card" href="listings/a.html" style="color:inherit;"
+        data-area="信義區" data-price="p3" data-layout="1"
+        data-tags="subsidy cat elevator" data-search="信義區 示意地址一段 示意物件 a">
         <div class="card-img"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C9A98A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"></path><path d="M5.5 10v9a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-9"></path><path d="M10 20v-6h4v6"></path></svg></div>
         <div class="card-body">
           <div class="tag-area">信義區</div>
@@ -48,13 +87,20 @@
             <span class="badge">12坪</span>
             <span class="badge">1房1廳</span>
           </div>
+          <div class="badges tags">
+            <span class="badge tag-badge">可租補</span>
+            <span class="badge tag-badge">可貓</span>
+            <span class="badge tag-badge">有電梯</span>
+          </div>
           <div class="price-row">
             <div class="price">NT$ 15,000<small>/月</small></div>
             <span class="view">查看詳情 →</span>
           </div>
         </div>
       </a>
-      <a class="card" href="listings/b.html" style="color:inherit;">
+      <a class="card" href="listings/b.html" style="color:inherit;"
+        data-area="大安區" data-price="p5" data-layout="2"
+        data-tags="subsidy dog parking balcony" data-search="大安區 示意地址二段 示意物件 b">
         <div class="card-img"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C9A98A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"></path><path d="M5.5 10v9a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-9"></path><path d="M10 20v-6h4v6"></path></svg></div>
         <div class="card-body">
           <div class="tag-area">大安區</div>
@@ -64,13 +110,21 @@
             <span class="badge">18坪</span>
             <span class="badge">2房1廳</span>
           </div>
+          <div class="badges tags">
+            <span class="badge tag-badge">可租補</span>
+            <span class="badge tag-badge">可狗</span>
+            <span class="badge tag-badge">有車位</span>
+            <span class="badge tag-badge">有陽台</span>
+          </div>
           <div class="price-row">
             <div class="price">NT$ 22,000<small>/月</small></div>
             <span class="view">查看詳情 →</span>
           </div>
         </div>
       </a>
-      <a class="card" href="listings/c.html" style="color:inherit;">
+      <a class="card" href="listings/c.html" style="color:inherit;"
+        data-area="中山區" data-price="p2" data-layout="studio"
+        data-tags="elevator balcony" data-search="中山區 示意地址三段 示意物件 c">
         <div class="card-img"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C9A98A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"></path><path d="M5.5 10v9a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-9"></path><path d="M10 20v-6h4v6"></path></svg></div>
         <div class="card-body">
           <div class="tag-area">中山區</div>
@@ -80,13 +134,19 @@
             <span class="badge">8坪</span>
             <span class="badge">套房</span>
           </div>
+          <div class="badges tags">
+            <span class="badge tag-badge">有電梯</span>
+            <span class="badge tag-badge">有陽台</span>
+          </div>
           <div class="price-row">
             <div class="price">NT$ 11,000<small>/月</small></div>
             <span class="view">查看詳情 →</span>
           </div>
         </div>
       </a>
-      <a class="card" href="listings/d.html" style="color:inherit;">
+      <a class="card" href="listings/d.html" style="color:inherit;"
+        data-area="松山區" data-price="p4" data-layout="1"
+        data-tags="subsidy cat dog balcony" data-search="松山區 示意地址四段 示意物件 d">
         <div class="card-img"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C9A98A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"></path><path d="M5.5 10v9a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-9"></path><path d="M10 20v-6h4v6"></path></svg></div>
         <div class="card-body">
           <div class="tag-area">松山區</div>
@@ -96,13 +156,21 @@
             <span class="badge">15坪</span>
             <span class="badge">1房1廳</span>
           </div>
+          <div class="badges tags">
+            <span class="badge tag-badge">可租補</span>
+            <span class="badge tag-badge">可貓</span>
+            <span class="badge tag-badge">可狗</span>
+            <span class="badge tag-badge">有陽台</span>
+          </div>
           <div class="price-row">
             <div class="price">NT$ 18,000<small>/月</small></div>
             <span class="view">查看詳情 →</span>
           </div>
         </div>
       </a>
-      <a class="card" href="listings/e.html" style="color:inherit;">
+      <a class="card" href="listings/e.html" style="color:inherit;"
+        data-area="內湖區" data-price="p5" data-layout="3plus"
+        data-tags="subsidy elevator parking flatutility" data-search="內湖區 示意地址五段 示意物件 e">
         <div class="card-img"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C9A98A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"></path><path d="M5.5 10v9a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-9"></path><path d="M10 20v-6h4v6"></path></svg></div>
         <div class="card-body">
           <div class="tag-area">內湖區</div>
@@ -112,13 +180,21 @@
             <span class="badge">25坪</span>
             <span class="badge">3房2廳</span>
           </div>
+          <div class="badges tags">
+            <span class="badge tag-badge">可租補</span>
+            <span class="badge tag-badge">有電梯</span>
+            <span class="badge tag-badge">有車位</span>
+            <span class="badge tag-badge">台水電</span>
+          </div>
           <div class="price-row">
             <div class="price">NT$ 28,000<small>/月</small></div>
             <span class="view">查看詳情 →</span>
           </div>
         </div>
       </a>
-      <a class="card" href="listings/f.html" style="color:inherit;">
+      <a class="card" href="listings/f.html" style="color:inherit;"
+        data-area="文山區" data-price="p3" data-layout="studio"
+        data-tags="balcony" data-search="文山區 示意地址六段 示意物件 f">
         <div class="card-img"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C9A98A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"></path><path d="M5.5 10v9a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-9"></path><path d="M10 20v-6h4v6"></path></svg></div>
         <div class="card-body">
           <div class="tag-area">文山區</div>
@@ -127,6 +203,9 @@
           <div class="badges">
             <span class="badge">10坪</span>
             <span class="badge">套房</span>
+          </div>
+          <div class="badges tags">
+            <span class="badge tag-badge">有陽台</span>
           </div>
           <div class="price-row">
             <div class="price">NT$ 12,500<small>/月</small></div>
@@ -150,5 +229,6 @@
     </div>
   </div>
 </div>
+<script src="assets/filter.js" defer></script>
 </body>
 </html>
