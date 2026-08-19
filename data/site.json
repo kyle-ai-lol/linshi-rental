@@ -1,0 +1,22 @@
+{
+  "brand": "林氏租屋",
+  "tagline": "🔥台中租屋！只搞真實🔥陪你找到理想的家",
+  "contact": {
+    "phone": "0989922557",
+    "line": "LIN990557",
+    "email": "oolongtea0713@gmail.com",
+    "ig": "林氏租屋6208_house",
+    "threads": "林氏租屋6208_house",
+    "hours": "24hr"
+  },
+  "about": {
+    "name": "林氏",
+    "role": "房屋帶看",
+    "avatar": null,
+    "features": [
+      { "title": "快速回覆詢問", "desc": "訊息盡量在當天回覆，看房時間可以彈性約" },
+      { "title": "物件實地拍攝", "desc": "每個物件都是實際走訪拍攝，照片就是實際現況" },
+      { "title": "在地生活機能介紹", "desc": "順便跟你分享附近的生活機能、交通方式" }
+    ]
+  }
+}
