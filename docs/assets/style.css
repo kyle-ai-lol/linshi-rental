@@ -63,6 +63,7 @@ input::placeholder, textarea::placeholder { color: #B4A88F; }
 .badges.tags { margin-top: -2px; }
 .badge { background: #F1E4D3; color: #8A5A34; border-radius: 999px; padding: 4px 10px; font-size: 12px; }
 .tag-badge { background: transparent; border: 1px solid #EDE1D2; color: #7A6A57; }
+.badge-type { background: #B4623E; color: #FFFFFF; font-weight: 600; }
 .price-row { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
 .price { font-size: 18px; font-weight: 700; color: #B4623E; }
 .price small { font-size: 12px; font-weight: 400; color: #7A6A57; }

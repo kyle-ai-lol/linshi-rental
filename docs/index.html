@@ -28,6 +28,14 @@
     <div class="search-box"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B4A88F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg><input type="text" id="search-input" placeholder="搜尋地區、路名、關鍵字"></div>
 
     <div class="filter-group">
+      <div class="filter-label">類型</div>
+      <div class="chip-row" data-filter-group="type">
+        <button type="button" class="chip" data-value="residential">住宅</button>
+        <button type="button" class="chip" data-value="storefront">店面</button>
+        <button type="button" class="chip" data-value="office">辦公商用</button>
+      </div>
+    </div>
+    <div class="filter-group">
       <div class="filter-label">地區</div>
       <div class="chip-row" data-filter-group="area">
         <button type="button" class="chip" data-value="北屯區">北屯區</button>
@@ -101,7 +109,7 @@
 
   <div class="grid" id="listing-grid">
       <a class="card" href="listings/w12f11.html" style="color:inherit;"
-        data-area="西區" data-price="p3" data-layout="studio"
+        data-area="西區" data-price="p3" data-layout="studio" data-type="residential"
         data-tags="subsidy cat dog elevator balcony" data-search="西區 五權路 鴻福名人華廈 12f-11">
         <div class="card-img"><img src="assets/photos/w12f11/1.jpg" alt="鴻福名人華廈 12F-11" loading="lazy"></div>
         <div class="card-body">
@@ -109,6 +117,7 @@
           <h3>鴻福名人華廈 12F-11</h3>
           <div class="addr-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7A6A57" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-7.2-7-12a7 7 0 0 1 14 0c0 4.8-7 12-7 12z"></path><circle cx="12" cy="9" r="2.5"></circle></svg><span>五權路</span></div>
           <div class="badges">
+            
             <span class="badge">電梯套房</span>
           </div>
           <div class="badges tags">

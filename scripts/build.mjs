@@ -103,6 +103,18 @@ const LAYOUT_BUCKETS = [
   { key: '3plus', label: '3房以上' },
 ];
 
+const TYPE_BUCKETS = [
+  { key: 'residential', label: '住宅', match: '住宅' },
+  { key: 'storefront', label: '店面', match: '店面' },
+  { key: 'office', label: '辦公商用', match: '辦公商用' },
+];
+
+function typeBucket(text) {
+  const t = String(text ?? '').trim();
+  const b = TYPE_BUCKETS.find((b) => b.match === t);
+  return b ? b.key : 'residential';
+}
+
 function fmtPrice(n) {
   return `NT$ ${n.toLocaleString('en-US')}`;
 }
@@ -131,6 +143,7 @@ function enrichListing(raw) {
     published: (raw.status || '').trim().toLowerCase() === 'published',
     priceNum,
     priceDisplay: fmtPrice(priceNum),
+    typeKey: typeBucket(raw.type),
     layoutKey: layoutBucket(raw.layout),
     priceKey: priceBucket(priceNum),
     tags,
@@ -264,6 +277,18 @@ ${extraScript}
 `;
 }
 
+function typeLabel(listing) {
+  const b = TYPE_BUCKETS.find((t) => t.key === listing.typeKey);
+  return b ? b.label : '住宅';
+}
+
+// Residential is the default/common case and stays visually quiet (already
+// implied by the layout badge); only non-residential listings get a called-out badge.
+function typeBadge(listing) {
+  if (listing.typeKey === 'residential') return '';
+  return `<span class="badge badge-type">${esc(typeLabel(listing))}</span>`;
+}
+
 function tagBadges(listing) {
   if (!listing.tags.length) return '';
   return `<div class="badges tags">
@@ -280,7 +305,7 @@ function cardImg(listing, base = '') {
 
 function card(listing, base = '') {
   return `      <a class="card" href="${base}listings/${listing.id}.html" style="color:inherit;"
-        data-area="${esc(listing.area)}" data-price="${listing.priceKey}" data-layout="${listing.layoutKey}"
+        data-area="${esc(listing.area)}" data-price="${listing.priceKey}" data-layout="${listing.layoutKey}" data-type="${listing.typeKey}"
         data-tags="${listing.tags.join(' ')}" data-search="${esc(listing.searchBlob)}">
         <div class="card-img">${cardImg(listing, base)}</div>
         <div class="card-body">
@@ -288,6 +313,7 @@ function card(listing, base = '') {
           <h3>${esc(listing.name)}</h3>
           <div class="addr-row">${icon.pin(13)}<span>${esc(listing.addr)}</span></div>
           <div class="badges">
+            ${typeBadge(listing)}
             <span class="badge">${esc(listing.layout)}</span>
           </div>
           ${tagBadges(listing)}
@@ -316,6 +342,10 @@ function buildIndex(site, listings, guides) {
   <div class="filter-bar">
     <div class="search-box">${icon.search()}<input type="text" id="search-input" placeholder="搜尋地區、路名、關鍵字"></div>
 
+    <div class="filter-group">
+      <div class="filter-label">類型</div>
+${filterChipRow('type', TYPE_BUCKETS)}
+    </div>
     <div class="filter-group">
       <div class="filter-label">地區</div>
 ${filterChipRow('area', TAICHUNG_DISTRICTS)}
@@ -403,6 +433,7 @@ function buildDetail(site, listing) {
         <h1 class="heading">${esc(listing.name)}</h1>
         <div class="addr-row">${icon.pin(14)}<span>${esc(listing.addr)}</span></div>
         <div class="badges" style="margin-top:4px;">
+          ${typeBadge(listing)}
           <span class="badge">${esc(listing.layout)}</span>
         </div>
         ${tagBadges(listing)}

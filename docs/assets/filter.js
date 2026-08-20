@@ -18,6 +18,7 @@
     var query = (searchInput && searchInput.value.trim().toLowerCase()) || '';
     if (query && card.getAttribute('data-search').indexOf(query) === -1) return false;
 
+    if (selected.type.size && !selected.type.has(card.getAttribute('data-type'))) return false;
     if (selected.area.size && !selected.area.has(card.getAttribute('data-area'))) return false;
     if (selected.price.size && !selected.price.has(card.getAttribute('data-price'))) return false;
     if (selected.layout.size && !selected.layout.has(card.getAttribute('data-layout'))) return false;
