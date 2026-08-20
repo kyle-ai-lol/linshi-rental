@@ -79,6 +79,15 @@ const PRICE_BUCKETS = [
   { key: 'p5', label: '20,000以上', test: (p) => p >= 20000 },
 ];
 
+// Full 29-district list, matching the reference site (71rent.com) so every
+// Taichung district is filterable even before a listing in it exists.
+const TAICHUNG_DISTRICTS = [
+  '北屯區', '西屯區', '南屯區', '北區', '西區', '中區', '南區', '東區',
+  '太平區', '大里區', '霧峰區', '烏日區', '豐原區', '大雅區', '潭子區', '神岡區',
+  '大肚區', '龍井區', '沙鹿區', '梧棲區', '清水區', '大甲區', '外埔區', '大安區',
+  '后里區', '石岡區', '東勢區', '新社區', '和平區',
+].map((a) => ({ key: a, label: a }));
+
 const LAYOUT_BUCKETS = [
   { key: 'studio', label: '套房' },
   { key: '1', label: '1房' },
@@ -258,7 +267,6 @@ ${items.map((it) => `        <button type="button" class="chip" data-value="${es
 }
 
 function buildIndex(site, listings) {
-  const areas = uniqueAreas(listings).map((a) => ({ key: a, label: a }));
   const body = `${topbar(site, 'index.html')}
 
   <div class="hero">
@@ -271,7 +279,7 @@ function buildIndex(site, listings) {
 
     <div class="filter-group">
       <div class="filter-label">地區</div>
-${filterChipRow('area', areas)}
+${filterChipRow('area', TAICHUNG_DISTRICTS)}
     </div>
     <div class="filter-group">
       <div class="filter-label">租金</div>
