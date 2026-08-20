@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "linshi-rental-docs",
+      "runtimeExecutable": "py",
+      "runtimeArgs": ["-m", "http.server", "5173", "--directory", "docs"],
+      "port": 5173
+    }
+  ]
+}

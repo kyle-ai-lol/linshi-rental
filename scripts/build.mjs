@@ -59,6 +59,14 @@ function readListingsRaw() {
   return parseCSV(text);
 }
 
+function readGuides() {
+  return JSON.parse(readFileSync(path.join(ROOT, 'data/guides.json'), 'utf8'));
+}
+
+function readReviews() {
+  return JSON.parse(readFileSync(path.join(ROOT, 'data/reviews.json'), 'utf8'));
+}
+
 // ---- filter facets ----
 
 const TAG_DEFS = [
@@ -179,11 +187,25 @@ const icon = {
     `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#B4623E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-2.5h6L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"></path><circle cx="12" cy="13" r="3.5"></circle></svg>`,
   pinAccent: () =>
     `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#B4623E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-7.2-7-12a7 7 0 0 1 14 0c0 4.8-7 12-7 12z"></path><circle cx="12" cy="9" r="2.5"></circle></svg>`,
+  checklist: (size = 26) =>
+    `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="#B4623E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3.5" width="14" height="17" rx="2"></rect><path d="M9 3.5V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v.5"></path><path d="m8.5 11 1.8 1.8L13.5 9.5"></path><path d="M8.5 16h7"></path></svg>`,
+  document: (size = 26) =>
+    `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="#B4623E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 2.5h7l4 4V20a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1z"></path><path d="M14 2.5V7h4"></path><path d="M8.5 12.5h7M8.5 16h5"></path></svg>`,
+  coin: (size = 26) =>
+    `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="#B4623E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7.5v9M14.8 9.8c0-1.1-1.2-2-2.8-2s-2.8.9-2.8 2 1.2 1.7 2.8 2 2.8.9 2.8 2-1.2 2-2.8 2-2.8-.9-2.8-2"></path></svg>`,
+  box: (size = 26) =>
+    `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="#B4623E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8 12 4l8.5 4-8.5 4-8.5-4z"></path><path d="M3.5 8v8L12 20l8.5-4V8"></path><path d="M12 12v8"></path></svg>`,
+  quote: (size = 22) =>
+    `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="#B4623E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8.5c-1.7 0-3 1.3-3 3v1.5c0 1.7 1.3 3 3 3"></path><path d="M4.3 12.8V9.3c0-2 1.6-3.6 3.6-3.6"></path><path d="M17 8.5c-1.7 0-3 1.3-3 3v1.5c0 1.7 1.3 3 3 3"></path><path d="M14.3 12.8V9.3c0-2 1.6-3.6 3.6-3.6"></path></svg>`,
 };
+
+const GUIDE_ICONS = { checklist: icon.checklist, document: icon.document, coin: icon.coin, box: icon.box, pin: icon.pinAccent };
 
 function nav(active, base = '') {
   const items = [
     ['index.html', '物件列表'],
+    ['guides.html', '租屋那些小事'],
+    ['reviews.html', '住客回饋'],
     ['about.html', '關於我'],
     ['contact.html', '聯絡方式'],
   ];
@@ -201,6 +223,7 @@ function topbar(site, active, base = '') {
 
 function footer(site, base = '') {
   const c = site.contact;
+  const links = site.externalLinks || [];
   return `  <div class="footer">
     <div class="footer-brand">
       <h4>${esc(site.brand)}</h4>
@@ -212,7 +235,11 @@ function footer(site, base = '') {
       <div>Email｜${esc(c.email)}</div>
       <div>IG｜${esc(c.ig)}</div>
       <div>脆｜${esc(c.threads)}</div>
-    </div>
+    </div>${links.length ? `
+    <div class="footer-links">
+      <h5>延伸資源</h5>
+      ${links.map((l) => `<a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer">${esc(l.label)} ↗</a>`).join('\n      ')}
+    </div>` : ''}
   </div>`;
 }
 
@@ -278,7 +305,7 @@ ${items.map((it) => `        <button type="button" class="chip" data-value="${es
       </div>`;
 }
 
-function buildIndex(site, listings) {
+function buildIndex(site, listings, guides) {
   const body = `${topbar(site, 'index.html')}
 
   <div class="hero">
@@ -314,6 +341,14 @@ ${filterChipRow('tag', TAG_DEFS)}
 
   <div class="grid" id="listing-grid">
 ${listings.map((l) => card(l)).join('\n')}
+  </div>
+
+  <div class="section-head">
+    <h2 class="heading">租屋那些小事</h2>
+    <a href="guides.html">看全部文章 →</a>
+  </div>
+  <div class="guide-grid">
+${guides.slice(0, 3).map((g) => guideCard(g)).join('\n')}
   </div>
 
 ${footer(site)}`;
@@ -410,6 +445,124 @@ ${footer(site, base)}`;
   });
 }
 
+function guideCategoryIcon(g) {
+  const fn = GUIDE_ICONS[g.icon] || icon.pinAccent;
+  return fn();
+}
+
+function guideCard(g, base = '') {
+  return `      <a class="guide-card" href="${base}guides/${g.id}.html" style="color:inherit;">
+        <div class="guide-icon">${guideCategoryIcon(g)}</div>
+        <div class="guide-card-body">
+          <div class="guide-meta"><span class="tag-area">${esc(g.category)}</span><span class="guide-date">${esc(g.date)}</span></div>
+          <h3>${esc(g.title)}</h3>
+          <p>${esc(g.excerpt)}</p>
+          <span class="view">閱讀全文 →</span>
+        </div>
+      </a>`;
+}
+
+function buildGuides(site, guides) {
+  const body = `${topbar(site, 'guides.html')}
+
+  <div class="hero">
+    <h1 class="heading">租屋那些小事</h1>
+    <p>看房、簽約、退租常會遇到的眉角，整理成幾篇實用筆記</p>
+  </div>
+
+  <div class="guide-list">
+${guides.map((g) => guideCard(g)).join('\n')}
+  </div>
+
+${footer(site)}`;
+  return pageShell({
+    title: `租屋那些小事｜${site.brand}`,
+    desc: '看房、簽約、費用、退租常見眉角整理',
+    body,
+  });
+}
+
+function buildGuideDetail(site, guide, prev, next) {
+  const base = '../';
+  const navRow = (prev || next) ? `  <div class="guide-pagenav">
+    ${prev ? `<a href="${esc(prev.id)}.html">← ${esc(prev.title)}</a>` : '<span></span>'}
+    ${next ? `<a class="next" href="${esc(next.id)}.html">${esc(next.title)} →</a>` : ''}
+  </div>
+
+` : '';
+  const body = `${topbar(site, 'guides.html', base)}
+
+  <div class="breadcrumb">
+    <a href="${base}guides.html">租屋那些小事</a>
+    <span class="sep">›</span>
+    <span class="current">${esc(guide.title)}</span>
+  </div>
+
+  <div class="guide-article">
+    <div class="guide-article-head">
+      <div class="guide-icon lg">${guideCategoryIcon(guide)}</div>
+      <div>
+        <div class="guide-meta"><span class="tag-area">${esc(guide.category)}</span><span class="guide-date">${esc(guide.date)}</span></div>
+        <h1 class="heading">${esc(guide.title)}</h1>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="description">
+      ${guide.body.map((p) => `<p>${esc(p)}</p>`).join('\n      ')}
+    </div>
+  </div>
+
+  <div class="cta-banner">
+    <div class="msg">想了解更多物件，或想約時間看房？</div>
+    <a class="btn-pill" href="${base}contact.html">聯絡我</a>
+  </div>
+
+${navRow}${footer(site, base)}`;
+  return pageShell({
+    title: `${esc(guide.title)}｜${site.brand}`,
+    desc: guide.excerpt,
+    base,
+    body,
+  });
+}
+
+function reviewCard(r) {
+  return `      <div class="review-card">
+        <div class="review-quote-icon">${icon.quote()}</div>
+        <p class="review-text">${esc(r.quote)}</p>
+        <div class="review-name">${esc(r.name)}</div>
+      </div>`;
+}
+
+function buildReviews(site, reviews) {
+  const content = reviews.length
+    ? `  <div class="review-grid">
+${reviews.map((r) => reviewCard(r)).join('\n')}
+  </div>`
+    : `  <div class="empty-state">
+    ${icon.speech()}
+    <p>目前還沒有刊登的住客回饋</p>
+    <p class="empty-sub">看房或入住後，歡迎透過下方方式留言給我們，你的回饋會出現在這裡</p>
+    <a class="btn-pill" href="contact.html">留下你的回饋</a>
+  </div>`;
+
+  const body = `${topbar(site, 'reviews.html')}
+
+  <div class="hero">
+    <h1 class="heading">住客回饋</h1>
+    <p>看房、租房路上，聽聽實際住過的人怎麼說</p>
+  </div>
+
+${content}
+
+${footer(site)}`;
+  return pageShell({
+    title: `住客回饋｜${site.brand}`,
+    desc: `${site.brand} 住客回饋與評價`,
+    body,
+  });
+}
+
 function buildAbout(site) {
   const a = site.about;
   const avatarInner = a.avatar
@@ -483,17 +636,22 @@ function main() {
   const all = readAllListings();
   const listings = all.filter((l) => l.published);
   const drafts = all.filter((l) => !l.published);
+  const guides = readGuides();
+  const reviews = readReviews();
 
   mkdirSync(path.join(SITE, 'listings'), { recursive: true });
+  mkdirSync(path.join(SITE, 'guides'), { recursive: true });
   mkdirSync(path.join(SITE, 'assets'), { recursive: true });
   copyFileSync(path.join(ROOT, 'assets/style.css'), path.join(SITE, 'assets/style.css'));
   copyFileSync(path.join(ROOT, 'assets/filter.js'), path.join(SITE, 'assets/filter.js'));
   copyFileSync(path.join(ROOT, 'assets/lightbox.js'), path.join(SITE, 'assets/lightbox.js'));
   if (!existsSync(path.join(SITE, '.nojekyll'))) writeFileSync(path.join(SITE, '.nojekyll'), '');
 
-  writeFileSync(path.join(SITE, 'index.html'), buildIndex(site, listings));
+  writeFileSync(path.join(SITE, 'index.html'), buildIndex(site, listings, guides));
   writeFileSync(path.join(SITE, 'about.html'), buildAbout(site));
   writeFileSync(path.join(SITE, 'contact.html'), buildContact(site));
+  writeFileSync(path.join(SITE, 'guides.html'), buildGuides(site, guides));
+  writeFileSync(path.join(SITE, 'reviews.html'), buildReviews(site, reviews));
   for (const l of listings) {
     if (!l.id) continue;
     writeFileSync(path.join(SITE, 'listings', `${l.id}.html`), buildDetail(site, l));
@@ -504,9 +662,13 @@ function main() {
       cpSync(srcPhotoDir, path.join(SITE, 'assets/photos', l.id), { recursive: true });
     }
   }
+  guides.forEach((g, i) => {
+    writeFileSync(path.join(SITE, 'guides', `${g.id}.html`), buildGuideDetail(site, g, guides[i - 1], guides[i + 1]));
+  });
 
-  console.log(`built: index.html, about.html, contact.html, listings/{${listings.map((l) => l.id).join(',')}}.html`);
+  console.log(`built: index.html, about.html, contact.html, guides.html, reviews.html, listings/{${listings.map((l) => l.id).join(',')}}.html, guides/{${guides.map((g) => g.id).join(',')}}.html`);
   console.log(`areas: ${uniqueAreas(listings).join(', ')}`);
+  console.log(`reviews: ${reviews.length}`);
   if (drafts.length) {
     const desc = drafts.map((l) => `${l.id} (${l.status || 'blank'})`).join(', ');
     console.log(`skipped ${drafts.length} non-published listing(s), not built: ${desc}`);
