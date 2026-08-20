@@ -493,7 +493,8 @@ function main() {
   console.log(`built: index.html, about.html, contact.html, listings/{${listings.map((l) => l.id).join(',')}}.html`);
   console.log(`areas: ${uniqueAreas(listings).join(', ')}`);
   if (drafts.length) {
-    console.log(`skipped ${drafts.length} draft (not "published") listing(s), not built: ${drafts.map((l) => l.id).join(', ')}`);
+    const desc = drafts.map((l) => `${l.id} (${l.status || 'blank'})`).join(', ');
+    console.log(`skipped ${drafts.length} non-published listing(s), not built: ${desc}`);
   }
 }
 

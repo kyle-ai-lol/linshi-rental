@@ -26,7 +26,11 @@ node scripts/build.mjs
 `id,status,area,name,addr,size,layout,price,floor,orientation,parking,pets,description,photo,tag_subsidy,tag_cat,tag_dog,tag_elevator,tag_parking,tag_balcony,tag_flatutility`
 
 - `id`：網址用的英文代號，例如 `a`，會變成 `listings/a.html`
-- `status`：**一定要是 `published` 這個字才會真的上架**，其他任何值（`draft`、打錯字、留空）都會被跳過、不會出現在網站上。規則：新物件先用 `draft` 加進表格，等確認實際有空屋、可以上架了，再把這欄改成 `published`，然後重新產生網站
+- `status`：**一定要是 `published` 這個字才會真的上架**，其他任何值都會被跳過、不會出現在網站上。三種用法：
+  - `draft`：新物件剛加進來，還沒確認可以上架
+  - `published`：確認過、正式上架中
+  - `withdrawn`：曾經處理過（可能已經有照片/描述），但現在沒空房或不出租了，先收著不刪掉——之後如果又有空房，直接把這欄改回 `published` 就能重新上架，不用重打一次資料
+  規則：新物件先用 `draft` 加進表格，等確認實際有空屋、可以上架了，再把這欄改成 `published`，然後重新產生網站
 - `addr`：地址只寫到路名，不要放門牌號碼（公開頁面隱私考量）
 - `price`：純數字（例如 `15000`），不要加 `NT$` 或逗號，網站會自動排版
 - `photos`：照片檔名，多張用 `|` 分開（例如 `1.jpg|2.jpg|3.jpg`），對應 `assets/photos/<id>/` 資料夾裡的檔案。第一張是列表卡片跟詳情頁大圖，其餘是縮圖。留空就顯示預設的房子圖示
