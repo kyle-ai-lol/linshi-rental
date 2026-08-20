@@ -2,7 +2,7 @@
 // Reads data/site.json + data/listings.csv, writes docs/*.html (GitHub Pages serves /docs on main).
 // Re-run this after editing the CSV (later: after re-exporting the Google Sheet as CSV over data/listings.csv).
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync, copyFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, copyFileSync, cpSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
@@ -117,6 +117,7 @@ function priceBucket(n) {
 function enrichListing(raw) {
   const priceNum = Number(raw.price) || 0;
   const tags = TAG_DEFS.filter((t) => (raw[`tag_${t.key}`] || '').trim() !== '').map((t) => t.key);
+  const photos = (raw.photos || '').split('|').map((p) => p.trim()).filter(Boolean);
   return {
     ...raw,
     published: (raw.status || '').trim().toLowerCase() === 'published',
@@ -125,6 +126,7 @@ function enrichListing(raw) {
     layoutKey: layoutBucket(raw.layout),
     priceKey: priceBucket(priceNum),
     tags,
+    photos,
     searchBlob: `${raw.area} ${raw.addr} ${raw.name}`.toLowerCase(),
   };
 }
@@ -238,11 +240,18 @@ function tagBadges(listing) {
           </div>`;
 }
 
+function cardImg(listing, base = '') {
+  if (listing.photos.length) {
+    return `<img src="${base}assets/photos/${listing.id}/${esc(listing.photos[0])}" alt="${esc(listing.name)}" loading="lazy">`;
+  }
+  return icon.house(40);
+}
+
 function card(listing, base = '') {
   return `      <a class="card" href="${base}listings/${listing.id}.html" style="color:inherit;"
         data-area="${esc(listing.area)}" data-price="${listing.priceKey}" data-layout="${listing.layoutKey}"
         data-tags="${listing.tags.join(' ')}" data-search="${esc(listing.searchBlob)}">
-        <div class="card-img">${icon.house(40)}</div>
+        <div class="card-img">${cardImg(listing, base)}</div>
         <div class="card-body">
           <div class="tag-area">${esc(listing.area)}</div>
           <h3>${esc(listing.name)}</h3>
@@ -324,9 +333,20 @@ function buildDetail(site, listing) {
   </div>
 
   <div class="gallery">
-    <div class="gallery-main">${icon.house(56)}</div>
+    <div class="gallery-main">${
+      listing.photos.length
+        ? `<img src="${base}assets/photos/${listing.id}/${esc(listing.photos[0])}" alt="${esc(listing.name)}">`
+        : icon.house(56)
+    }</div>
     <div class="thumb-grid">
-      ${[1, 2, 3, 4].map(() => `<div class="thumb">${icon.house(26)}</div>`).join('\n      ')}
+      ${
+        listing.photos.length > 1
+          ? listing.photos
+              .slice(1)
+              .map((p) => `<div class="thumb"><img src="${base}assets/photos/${listing.id}/${esc(p)}" alt="${esc(listing.name)}" loading="lazy"></div>`)
+              .join('\n      ')
+          : [1, 2, 3, 4].map(() => `<div class="thumb">${icon.house(26)}</div>`).join('\n      ')
+      }
     </div>
   </div>
 
@@ -462,6 +482,12 @@ function main() {
   for (const l of listings) {
     if (!l.id) continue;
     writeFileSync(path.join(SITE, 'listings', `${l.id}.html`), buildDetail(site, l));
+    // Only published listings' photos get copied into the public output —
+    // a draft's photos must not end up in docs/ even if the files exist locally.
+    const srcPhotoDir = path.join(ROOT, 'assets/photos', l.id);
+    if (l.photos.length && existsSync(srcPhotoDir)) {
+      cpSync(srcPhotoDir, path.join(SITE, 'assets/photos', l.id), { recursive: true });
+    }
   }
 
   console.log(`built: index.html, about.html, contact.html, listings/{${listings.map((l) => l.id).join(',')}}.html`);
