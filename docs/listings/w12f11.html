@@ -24,14 +24,22 @@
   </div>
 
   <div class="gallery">
-    <div class="gallery-main"><img src="../assets/photos/w12f11/1.jpg" alt="鴻福名人華廈 12F-11"></div>
+    <div class="gallery-main"><img class="gallery-photo" src="../assets/photos/w12f11/1.jpg" alt="鴻福名人華廈 12F-11"></div>
     <div class="thumb-grid">
-      <div class="thumb"><img src="../assets/photos/w12f11/2.jpg" alt="鴻福名人華廈 12F-11" loading="lazy"></div>
-      <div class="thumb"><img src="../assets/photos/w12f11/3.jpg" alt="鴻福名人華廈 12F-11" loading="lazy"></div>
-      <div class="thumb"><img src="../assets/photos/w12f11/4.jpg" alt="鴻福名人華廈 12F-11" loading="lazy"></div>
-      <div class="thumb"><img src="../assets/photos/w12f11/5.jpg" alt="鴻福名人華廈 12F-11" loading="lazy"></div>
-      <div class="thumb"><img src="../assets/photos/w12f11/6.jpg" alt="鴻福名人華廈 12F-11" loading="lazy"></div>
+      <div class="thumb"><img class="gallery-photo" src="../assets/photos/w12f11/2.jpg" alt="鴻福名人華廈 12F-11" loading="lazy"></div>
+      <div class="thumb"><img class="gallery-photo" src="../assets/photos/w12f11/3.jpg" alt="鴻福名人華廈 12F-11" loading="lazy"></div>
+      <div class="thumb"><img class="gallery-photo" src="../assets/photos/w12f11/4.jpg" alt="鴻福名人華廈 12F-11" loading="lazy"></div>
+      <div class="thumb"><img class="gallery-photo" src="../assets/photos/w12f11/5.jpg" alt="鴻福名人華廈 12F-11" loading="lazy"></div>
+      <div class="thumb"><img class="gallery-photo" src="../assets/photos/w12f11/6.jpg" alt="鴻福名人華廈 12F-11" loading="lazy"></div>
     </div>
+  </div>
+
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <button type="button" class="lightbox-close" data-lightbox-close aria-label="關閉"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="5" x2="19" y2="19"></line><line x1="19" y1="5" x2="5" y2="19"></line></svg></button>
+    <button type="button" class="lightbox-prev" data-lightbox-prev aria-label="上一張"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></button>
+    <img class="lightbox-img" src="" alt="">
+    <button type="button" class="lightbox-next" data-lightbox-next aria-label="下一張"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></button>
+    <div class="lightbox-count"></div>
   </div>
 
   <div class="detail-row">
@@ -96,6 +104,6 @@
     </div>
   </div>
 </div>
-
+<script src="../assets/lightbox.js" defer></script>
 </body>
 </html>

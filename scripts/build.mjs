@@ -157,6 +157,10 @@ const icon = {
     `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B4A88F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`,
   close: () =>
     `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="5" x2="19" y2="19"></line><line x1="19" y1="5" x2="5" y2="19"></line></svg>`,
+  chevronLeft: () =>
+    `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg>`,
+  chevronRight: () =>
+    `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>`,
   phone: () =>
     `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7A6A57" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2C10.5 21 3 13.5 3 6a2 2 0 0 1 2-2z"></path></svg>`,
   chat: () =>
@@ -335,7 +339,7 @@ function buildDetail(site, listing) {
   <div class="gallery">
     <div class="gallery-main">${
       listing.photos.length
-        ? `<img src="${base}assets/photos/${listing.id}/${esc(listing.photos[0])}" alt="${esc(listing.name)}">`
+        ? `<img class="gallery-photo" src="${base}assets/photos/${listing.id}/${esc(listing.photos[0])}" alt="${esc(listing.name)}">`
         : icon.house(56)
     }</div>
     <div class="thumb-grid">
@@ -343,11 +347,19 @@ function buildDetail(site, listing) {
         listing.photos.length > 1
           ? listing.photos
               .slice(1)
-              .map((p) => `<div class="thumb"><img src="${base}assets/photos/${listing.id}/${esc(p)}" alt="${esc(listing.name)}" loading="lazy"></div>`)
+              .map((p) => `<div class="thumb"><img class="gallery-photo" src="${base}assets/photos/${listing.id}/${esc(p)}" alt="${esc(listing.name)}" loading="lazy"></div>`)
               .join('\n      ')
           : [1, 2, 3, 4].map(() => `<div class="thumb">${icon.house(26)}</div>`).join('\n      ')
       }
     </div>
+  </div>
+
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <button type="button" class="lightbox-close" data-lightbox-close aria-label="關閉">${icon.close()}</button>
+    <button type="button" class="lightbox-prev" data-lightbox-prev aria-label="上一張">${icon.chevronLeft()}</button>
+    <img class="lightbox-img" src="" alt="">
+    <button type="button" class="lightbox-next" data-lightbox-next aria-label="下一張">${icon.chevronRight()}</button>
+    <div class="lightbox-count"></div>
   </div>
 
   <div class="detail-row">
@@ -393,7 +405,13 @@ function buildDetail(site, listing) {
   </div>
 
 ${footer(site, base)}`;
-  return pageShell({ title: `${esc(listing.name)}｜${site.brand}`, desc: `${listing.area} ${listing.addr}・${listing.size}・${listing.priceDisplay}/月`, base, body });
+  return pageShell({
+    title: `${esc(listing.name)}｜${site.brand}`,
+    desc: `${listing.area} ${listing.addr}・${listing.size}・${listing.priceDisplay}/月`,
+    base,
+    extraScript: `<script src="${base}assets/lightbox.js" defer></script>`,
+    body,
+  });
 }
 
 function buildAbout(site) {
@@ -474,6 +492,7 @@ function main() {
   mkdirSync(path.join(SITE, 'assets'), { recursive: true });
   copyFileSync(path.join(ROOT, 'assets/style.css'), path.join(SITE, 'assets/style.css'));
   copyFileSync(path.join(ROOT, 'assets/filter.js'), path.join(SITE, 'assets/filter.js'));
+  copyFileSync(path.join(ROOT, 'assets/lightbox.js'), path.join(SITE, 'assets/lightbox.js'));
   if (!existsSync(path.join(SITE, '.nojekyll'))) writeFileSync(path.join(SITE, '.nojekyll'), '');
 
   writeFileSync(path.join(SITE, 'index.html'), buildIndex(site, listings));
