@@ -261,7 +261,6 @@ function card(listing, base = '') {
           <h3>${esc(listing.name)}</h3>
           <div class="addr-row">${icon.pin(13)}<span>${esc(listing.addr)}</span></div>
           <div class="badges">
-            <span class="badge">${esc(listing.size)}</span>
             <span class="badge">${esc(listing.layout)}</span>
           </div>
           ${tagBadges(listing)}
@@ -369,7 +368,6 @@ function buildDetail(site, listing) {
         <h1 class="heading">${esc(listing.name)}</h1>
         <div class="addr-row">${icon.pin(14)}<span>${esc(listing.addr)}</span></div>
         <div class="badges" style="margin-top:4px;">
-          <span class="badge">${esc(listing.size)}</span>
           <span class="badge">${esc(listing.layout)}</span>
         </div>
         ${tagBadges(listing)}
@@ -378,10 +376,8 @@ function buildDetail(site, listing) {
       <div class="divider"></div>
 
       <div class="spec-grid">
-        <div class="spec"><span>坪數</span><span>${esc(listing.size)}</span></div>
         <div class="spec"><span>格局</span><span>${esc(listing.layout)}</span></div>
         <div class="spec"><span>樓層</span><span>${esc(listing.floor)}</span></div>
-        <div class="spec"><span>朝向</span><span>${esc(listing.orientation)}</span></div>
         <div class="spec"><span>車位</span><span>${esc(listing.parking)}</span></div>
         <div class="spec"><span>寵物</span><span>${esc(listing.pets)}</span></div>
       </div>
@@ -407,7 +403,7 @@ function buildDetail(site, listing) {
 ${footer(site, base)}`;
   return pageShell({
     title: `${esc(listing.name)}｜${site.brand}`,
-    desc: `${listing.area} ${listing.addr}・${listing.size}・${listing.priceDisplay}/月`,
+    desc: `${listing.area} ${listing.addr}・${listing.layout}・${listing.priceDisplay}/月`,
     base,
     extraScript: `<script src="${base}assets/lightbox.js" defer></script>`,
     body,
