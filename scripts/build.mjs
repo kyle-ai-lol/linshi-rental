@@ -110,6 +110,7 @@ function enrichListing(raw) {
   const tags = TAG_DEFS.filter((t) => (raw[`tag_${t.key}`] || '').trim() !== '').map((t) => t.key);
   return {
     ...raw,
+    published: (raw.status || '').trim().toLowerCase() === 'published',
     priceNum,
     priceDisplay: fmtPrice(priceNum),
     layoutKey: layoutBucket(raw.layout),
@@ -119,8 +120,17 @@ function enrichListing(raw) {
   };
 }
 
-function readListings() {
+// Everything in the CSV, published or not (status anything other than exactly
+// "published" is treated as draft/not-ready — fails closed on purpose: a typo
+// or blank status must never accidentally go public).
+function readAllListings() {
   return readListingsRaw().map(enrichListing);
+}
+
+// Only what's actually confirmed vacant and cleared to list — this is what
+// the built site (docs/) is generated from.
+function readListings() {
+  return readAllListings().filter((l) => l.published);
 }
 
 function uniqueAreas(listings) {
@@ -428,7 +438,9 @@ ${footer(site)}`;
 
 function main() {
   const site = readSite();
-  const listings = readListings();
+  const all = readAllListings();
+  const listings = all.filter((l) => l.published);
+  const drafts = all.filter((l) => !l.published);
 
   mkdirSync(path.join(SITE, 'listings'), { recursive: true });
   mkdirSync(path.join(SITE, 'assets'), { recursive: true });
@@ -446,6 +458,9 @@ function main() {
 
   console.log(`built: index.html, about.html, contact.html, listings/{${listings.map((l) => l.id).join(',')}}.html`);
   console.log(`areas: ${uniqueAreas(listings).join(', ')}`);
+  if (drafts.length) {
+    console.log(`skipped ${drafts.length} draft (not "published") listing(s), not built: ${drafts.map((l) => l.id).join(', ')}`);
+  }
 }
 
 main();

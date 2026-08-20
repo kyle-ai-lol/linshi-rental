@@ -23,8 +23,11 @@ node scripts/build.mjs
 
 ## 物件欄位說明（listings.csv）
 
-`id,area,name,addr,size,layout,price,floor,orientation,parking,pets,description,photo`
+`id,status,area,name,addr,size,layout,price,floor,orientation,parking,pets,description,photo,tag_subsidy,tag_cat,tag_dog,tag_elevator,tag_parking,tag_balcony,tag_flatutility`
 
 - `id`：網址用的英文代號，例如 `a`，會變成 `listings/a.html`
+- `status`：**一定要是 `published` 這個字才會真的上架**，其他任何值（`draft`、打錯字、留空）都會被跳過、不會出現在網站上。規則：新物件先用 `draft` 加進表格，等確認實際有空屋、可以上架了，再把這欄改成 `published`，然後重新產生網站
 - `addr`：地址只寫到路名，不要放門牌號碼（公開頁面隱私考量）
+- `price`：純數字（例如 `15000`），不要加 `NT$` 或逗號，網站會自動排版
 - `photo`：物件照片網址（先留空，之後可以放 Google Drive 分享連結或圖床連結）
+- `tag_*`：這 7 欄對應網站上的「特色」篩選標籤（可租補/可貓/可狗/有電梯/有車位/有陽台/台水電），格子裡打任何東西就算「有」，留空就是「沒有」
